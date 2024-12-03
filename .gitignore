@@ -2,5 +2,5 @@ target/classes/application.properties
 src/main/resources/application.properties
 *.class
 *.log
-.idea/workspace.xml
 *.iml
+.idea/
