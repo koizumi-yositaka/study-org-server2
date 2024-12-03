@@ -1,0 +1,407 @@
+openapi: "3.0.0"
+info:
+  title: PRODUCT API DOC
+  version: "0.0.1"
+  description: PRODUCT API DOC
+tags:
+  - name: opts
+    description: 運用監視関連のAPI
+  - name: users
+    description: ユーザー管理
+  - name: meeting
+    description: ミーティング
+servers:
+  - url: http://localhost:8085/api
+paths:
+
+  /health:
+    get:
+      tags:
+        - opts
+      responses:
+        '200':
+          description: OK
+  /user/role:
+    get:
+      tags:
+        - opts
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponseDTO"
+        '403':
+          description: 認証エラー
+
+
+  /user/signup:
+    post:
+      tags:
+        - users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginUserForm"
+      responses:
+        '201':
+          description: SIGNUP SUCCESS
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponseDTO"
+        '404':
+          description: UserNotFoundError
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResourceNotFoundError"
+    put:
+      tags:
+        - users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginUserForm"
+      responses:
+        '200':
+          description: SIGNUP SUCCESS
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponseDTO"
+        '404':
+          description: UserNotFoundError
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResourceNotFoundError"
+  /user/login:
+    post:
+      tags:
+        - users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginUserForm"
+      responses:
+        '200':
+          description: LOGIN SUCCESS
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponseDTO"
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: JSESSIONID=abcde12345; Path=/; HttpOnly
+        '404':
+          description: UserNotFoundError
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResourceNotFoundError"
+        '403':
+          description: ForbiddenError
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForbiddenError"
+  /user/manage:
+    post:
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: NG
+  /meeting:
+    get:
+      tags:
+        - meeting
+      responses:
+        '200':
+          description: 会議一覧
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MeetingResponseDTOList"
+    post:
+      tags:
+        - meetings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MeetingForm"
+      responses:
+        201:
+          description: created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MeetingResponseDTO"
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequestError"
+  /meeting/{meetingId}:
+    get:
+      tags:
+        - meetings
+      parameters:
+        - name: meetingId
+          in: path
+          required: true
+          description: 取得対象のID
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MeetingResponseDTO"
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequestError"
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResourceNotFoundError"
+    put:
+      tags:
+        - meeting
+      parameters:
+        - name: meetingId
+          in: path
+          required: true
+          description: "更新"
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MeetingForm"
+
+      responses:
+        200:
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MeetingResponseDTO"
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequestError"
+        '403':
+          description: ForbiddenError
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForbiddenError"
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResourceNotFoundError"
+    delete:
+      description: 要素の削除
+      tags:
+        - meetings
+      parameters:
+        - name: meetingId
+          in: path
+          description: 削除対象のID
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+      responses:
+        204:
+          description: No Content
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequestError"
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResourceNotFoundError"
+components:
+  schemas:
+    LoginUserForm:
+      description: ログイン時のユーザー情報
+      properties:
+        email:
+          type: string
+          description: "ログインEmail"
+        password:
+          type: string
+          description: "パスワード"
+      required:
+        - email
+        - password
+    UserResponseDTO:
+      description: ログイン時の結果情報
+      properties:
+        role:
+          type: string
+          description: "ROLE"
+        email:
+          type: string
+          description: "email"
+      required:
+        - role
+        - email
+    MeetingForm:
+      description: ミーティング登録用
+      properties:
+        title:
+          type: string
+          description: "メーティング名"
+        detail:
+          type: string
+          description: "詳細情報"
+        openerId:
+          type: integer
+          format: int64
+          description: "開催者ID"
+        eventDate:
+          type: string
+          format: date-time
+          description: "開催日時"
+          example: '2017-07-21T17:32:28Z'
+        duration_minutes:
+          type: integer
+          format: int32
+          default: 60
+          description: "会議時間"
+      required:
+        - email
+        - password
+        - openerId
+        - eventDate
+    MeetingResponseDTO:
+      description: メーティングの結果情報
+      properties:
+        id:
+          type: integer
+          format: int32
+          description: "ID"
+        title:
+          type: string
+          description: "title"
+      required:
+        - id
+        - title
+    MeetingResponseDTOList:
+      type: object
+      description: ミーティングのリスト
+      properties:
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/MeetingResponseDTO"
+      required:
+        - results
+    ForbiddenError:
+      description: アクセス権限がありません
+      type: object
+      properties:
+        title:
+          type: string
+          description: "エラーのタイプ"
+          default: "パスワードが違います"
+        detail:
+          type: string
+          description: "エラーの詳細"
+      required:
+        - title
+        - detail
+    ResourceNotFoundError:
+      description: 指定したリソースは存在しない
+      type: object
+      properties:
+        title:
+          type: string
+          description: "エラーのタイプ"
+          default: "Resource Not Found"
+        detail:
+          type: string
+          description: "エラーの詳細"
+      required:
+        - title
+        - detail
+    BadRequestError:
+      description: 不正リクエスト
+      type: object
+      properties:
+        title:
+          type: string
+          description: エラータイトル
+          default: "BadRequest"
+        detail:
+          type: string
+          description: ""
+          default: "リクエストが不正です。再度リクエストを送信してください"
+        invalid-params:
+          type: array
+          items:
+            $ref: "#/components/schemas/InvalidParam"
+    InvalidParam:
+      description: "不正リクエストについての詳細"
+      type: object
+      properties:
+        name:
+          type: string
+          description: エラーが発生したフィールド名
+        reason:
+          type: string
+          description: エラーの理由
+      required:
+        - name
+        - reason
+
+
+
+
+
+
+
+
+
+
+
+

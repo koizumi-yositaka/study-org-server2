@@ -1,0 +1,15 @@
+spring:
+  profiles:
+    active: dev
+  application:
+    name: study-org-server
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driverClassName: org.h2.Driver
+    username: sa
+    password: password
+    schema: src/main/resource/schema.sql
+    data: src/main/resource/data.sql
+
+server:
+  port: 8085
