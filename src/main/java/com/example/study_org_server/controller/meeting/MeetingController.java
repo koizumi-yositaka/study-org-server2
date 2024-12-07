@@ -1,15 +1,15 @@
 package com.example.study_org_server.controller.meeting;
 
 import com.example.study_org_server.controller.MeetingApi;
+import com.example.study_org_server.exception.ReservationConflict;
 import com.example.study_org_server.service.meeting.MeetingService;
 import lombok.RequiredArgsConstructor;
-import org.openapitools.example.model.MeetingForm;
-import org.openapitools.example.model.MeetingResponseDTO;
-import org.openapitools.example.model.MeetingResponseDTOList;
+import org.openapitools.example.model.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -39,22 +39,27 @@ public class MeetingController implements MeetingApi {
         meetingService.deleteMeetingById(meetingId);
         return ResponseEntity.noContent().build();
     }
-//        List<MeetingResponseDTO> meetings = meetingService.findAllMeeting();
-//        return ResponseEntity.ok().body(meetings).;
-//    }
-
 
     @Override
-    public ResponseEntity<MeetingResponseDTOList> meetingGet() {
-        List<MeetingResponseDTO> meetings = meetingService.findAllMeeting();
+    public ResponseEntity<MeetingResponseDTOList> meetingGet(MeetingSearchForm searchForm, Pagination pagination,OrderProp orderProp) {
+        List<MeetingResponseDTO> meetings = new ArrayList<>();
+        if(searchForm !=null){
+            meetings=meetingService.searchMeeting(searchForm,pagination,orderProp);
+        }else{
+            meetings = meetingService.findAllMeeting(pagination,orderProp);
+        }
         return ResponseEntity.ok().body(new MeetingResponseDTOList(meetings));
     }
 
-
-
     @Override
     public ResponseEntity<MeetingResponseDTO> meetingPost(MeetingForm meetingForm) {
+        if(!meetingService.findMeetingByEventDate(meetingForm.getEventDate()).isEmpty()){
+            throw new ReservationConflict(meetingForm.getEventDate());
+        }
         meetingService.reserveMeeting(meetingForm);
-        return ResponseEntity.created(URI.create("users/"+meetingForm.getTitle())).build();
+        return ResponseEntity.created(URI.create("meeting/"+meetingForm.getTitle())).build();
     }
+
+    //offsetなどの件数調整
+    //order
 }

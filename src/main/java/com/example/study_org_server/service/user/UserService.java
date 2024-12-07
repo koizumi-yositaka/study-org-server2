@@ -4,6 +4,8 @@ import com.example.study_org_server.repository.user.UserRecord;
 import com.example.study_org_server.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.openapitools.example.model.LoginUserForm;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -20,9 +22,9 @@ import java.util.Optional;
 public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
-    //private final PasswordEncoder passwordEncoder;
 
     @Override
+    @Cacheable(value = "getUser", key = "'users/' + #email")
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         UserRecord user= userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException(email));
         // UserDetailsを返却
@@ -45,6 +47,7 @@ public class UserService implements UserDetailsService {
         }
     }
     @Transactional
+    @CacheEvict(value = "getUser",key = "'users/' +#loginUserForm.email")
     public String changePassword(LoginUserForm loginUserForm){
         String email=loginUserForm.getEmail();
         UserRecord user= userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException(email));

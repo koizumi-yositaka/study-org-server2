@@ -126,6 +126,26 @@ paths:
     get:
       tags:
         - meeting
+      parameters:
+        - name: searchForm
+          in: query
+          required: false
+          description: 検索パラむ
+          schema:
+            $ref: "#/components/schemas/MeetingSearchForm"
+        - name: pagination
+          in: query
+          required: false
+          description: ページネーション
+          schema:
+            $ref: "#/components/schemas/pagination"
+
+        - name: orderProp
+          in: query
+          required: false
+          description: Order
+          schema:
+            $ref: "#/components/schemas/OrderProp"
       responses:
         '200':
           description: 会議一覧
@@ -155,6 +175,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/BadRequestError"
+        409:
+          description: Request Conflict
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConflictError"
   /meeting/{meetingId}:
     get:
       tags:
@@ -231,6 +257,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ResourceNotFoundError"
+        409:
+          description: Request Conflict
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConflictError"
     delete:
       description: 要素の削除
       tags:
@@ -261,6 +293,23 @@ paths:
                 $ref: "#/components/schemas/ResourceNotFoundError"
 components:
   schemas:
+    pagination:
+      type: object
+      properties:
+        total:
+          type: integer
+        offset:
+          type: integer
+        limit:
+          type: integer
+    OrderProp:
+      type: object
+      properties:
+        property:
+          type: string
+        direction:
+          type: string
+          default: asc
     LoginUserForm:
       description: ログイン時のユーザー情報
       properties:
@@ -300,21 +349,46 @@ components:
           description: "開催者ID"
         eventDate:
           type: string
-          format: date-time
-          description: "開催日時"
-          example: '2017-07-21T17:32:28Z'
-        duration_minutes:
-          type: integer
-          format: int32
-          default: 60
-          description: "会議時間"
+          format: date
+          description: "開催日"
+          example: '2017-07-21'
+        startTime:
+          type: string
+          description: "開始時間"
+          example: '1700'
+        endTime:
+          type: string
+          description: "終了時間"
+          example: '1800'
       required:
         - email
         - password
         - openerId
         - eventDate
+        - startTime
+        - endTime
+    MeetingSearchForm:
+      description: ミーティング登録用
+      properties:
+        searchWord:
+          type: string
+          description: "検索文字"
+        searchStartDate:
+          type: string
+          format: date
+          description: "検索開始"
+        searchEndDate:
+          type: string
+          format: date
+          description: "検索終了"
+        searchOpenerId:
+          type: array
+          description: "開催者IDList"
+          items:
+            type: integer
+            format: int64
     MeetingResponseDTO:
-      description: メーティングの結果情報
+      description: ミーティングの結果情報
       properties:
         id:
           type: integer
@@ -323,9 +397,34 @@ components:
         title:
           type: string
           description: "title"
+        detail:
+          type: string
+          description: "detail"
+        openerId:
+          type: integer
+          format: int64
+          description: "開催者ID"
+        eventDate:
+          type: string
+          format: date
+          description: "開催日"
+          example: '2017-07-21'
+        startTime:
+          type: string
+          description: "開始時間"
+          example: '1700'
+        endTime:
+          type: string
+          description: "終了時間"
+          example: '1800'
       required:
         - id
         - title
+        - detail
+        - openerId
+        - eventDate
+        - startTime
+        - endTime
     MeetingResponseDTOList:
       type: object
       description: ミーティングのリスト
@@ -344,6 +443,20 @@ components:
           type: string
           description: "エラーのタイプ"
           default: "パスワードが違います"
+        detail:
+          type: string
+          description: "エラーの詳細"
+      required:
+        - title
+        - detail
+    ConflictError:
+      description: "409"
+      type: object
+      properties:
+        title:
+          type: string
+          description: ""
+          default: "予約が重複"
         detail:
           type: string
           description: "エラーの詳細"
@@ -393,7 +506,6 @@ components:
       required:
         - name
         - reason
-
 
 
 

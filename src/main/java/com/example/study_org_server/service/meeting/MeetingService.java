@@ -4,11 +4,11 @@ import com.example.study_org_server.exception.MeetingNotFoundException;
 import com.example.study_org_server.repository.meeting.MeetingRecord;
 import com.example.study_org_server.repository.meeting.MeetingRepository;
 import lombok.RequiredArgsConstructor;
-import org.openapitools.example.model.MeetingForm;
-import org.openapitools.example.model.MeetingResponseDTO;
+import org.openapitools.example.model.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,20 +17,23 @@ import java.util.Optional;
 public class MeetingService {
     private final MeetingRepository meetingRepository;
 
-    public List<MeetingResponseDTO> findAllMeeting(){
+    public List<MeetingResponseDTO> findAllMeeting( Pagination pagination,OrderProp orderProp){
 //        MeetingResponseDTOList meetings=
 //        return meetings.map(x -> new MeetingResponseDTO(x.id(),x.title())).toList();
-        return meetingRepository.findAllMeetings().stream().map(x -> new MeetingResponseDTO(x.id(), x.title())).toList();
+        return meetingRepository.findAllMeetings(pagination,orderProp).stream().map(MeetingRecord::repack).toList();
     }
 
     public List<MeetingResponseDTO> findMeetingsByOpenerId(int openerId){
-        return meetingRepository.findMeetingsByOpenerId(openerId).stream().map(x -> new MeetingResponseDTO(x.id(), x.title())).toList();
+        return meetingRepository.findMeetingsByOpenerId(openerId).stream().map(MeetingRecord::repack).toList();
     }
 
     public MeetingResponseDTO findMeetingById(int id){
-        return meetingRepository.findMeetingById(id).map(record -> new MeetingResponseDTO(record.id(), record.title())).orElseThrow(()-> new MeetingNotFoundException("AA"));
+        return meetingRepository.findMeetingById(id).map(MeetingRecord::repack).orElseThrow(()-> new MeetingNotFoundException("AA"));
     }
 
+    public List<MeetingResponseDTO> findMeetingByEventDate(LocalDate targetDate){
+        return meetingRepository.findMeetingByEventDate(targetDate).stream().map(MeetingRecord::repack).toList();
+    }
 
     //create
     @Transactional
@@ -50,6 +53,13 @@ public class MeetingService {
     public void updateMeeting(int id, MeetingForm meetingForm){
         var updateData=new MeetingRecord(meetingForm);
         meetingRepository.update(id,updateData);
+    }
+
+    //search
+    public List<MeetingResponseDTO> searchMeeting(MeetingSearchForm meetingSearchForm, Pagination pagination, OrderProp orderProp){
+        //チェック
+        //日付が前後
+        return meetingRepository.search(meetingSearchForm,pagination,orderProp).stream().map(MeetingRecord::repack).toList();
     }
 
 
