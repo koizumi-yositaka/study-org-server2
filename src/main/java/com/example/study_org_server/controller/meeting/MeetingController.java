@@ -53,9 +53,7 @@ public class MeetingController implements MeetingApi {
 
     @Override
     public ResponseEntity<MeetingResponseDTO> meetingPost(MeetingForm meetingForm) {
-        if(!meetingService.findMeetingByEventDate(meetingForm.getEventDate()).isEmpty()){
-            throw new ReservationConflict(meetingForm.getEventDate());
-        }
+
         meetingService.reserveMeeting(meetingForm);
         return ResponseEntity.created(URI.create("meeting/"+meetingForm.getTitle())).build();
     }

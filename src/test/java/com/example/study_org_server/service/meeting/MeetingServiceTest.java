@@ -1,6 +1,7 @@
 package com.example.study_org_server.service.meeting;
 
 import com.example.study_org_server.exception.MeetingNotFoundException;
+import com.example.study_org_server.exception.ReservationConflict;
 import com.example.study_org_server.repository.meeting.MeetingRecord;
 import com.example.study_org_server.repository.meeting.MeetingRepository;
 import org.junit.jupiter.api.AfterEach;
@@ -34,9 +35,9 @@ class MeetingServiceTest {
     static LocalDate time_3 =LocalDate.of(2020,12,25);
 
 
-    private static final MeetingRecord meetingRecord_1 = new MeetingRecord(null,"TITLE_1","DETAIL_1",1L,time_1,"1700","1700" );
-    private static final MeetingRecord meetingRecord_2 = new MeetingRecord(null,"TITLE_2","DETAIL_2",1L,time_2,"1700","1800" );
-    private static final MeetingRecord meetingRecord_3 = new MeetingRecord(null,"TITLE_3","DETAIL_3",1L,time_3,"1700","1800" );
+    private static final MeetingRecord meetingRecord_1 = new MeetingRecord(null,"TITLE_1","DETAIL_1",1L,time_1,"1700","1700" ,"0");
+    private static final MeetingRecord meetingRecord_2 = new MeetingRecord(null,"TITLE_2","DETAIL_2",1L,time_2,"1700","1800" ,"0");
+    private static final MeetingRecord meetingRecord_3 = new MeetingRecord(null,"TITLE_3","DETAIL_3",1L,time_3,"1700","1800","0" );
 
     private static final MeetingResponseDTO meetingsDTO_1 = new MeetingResponseDTO(1,"TITLE_1","DETAIL_1",1L,time_1,"1700","1700");
     private static final MeetingResponseDTO meetingsDTO_2 = new MeetingResponseDTO(1,"TITLE_2","DETAIL_2",1L,time_2,"1700","1700");
@@ -129,6 +130,22 @@ class MeetingServiceTest {
         form.setOpenerId(1L);
         meetingService.updateMeeting(1,form);
         verify(meetingRepository,times(1)).update(anyInt(),any(MeetingRecord.class));
+
+    }
+
+
+    @Test
+    //重複しないようにする
+    public void insert_sameDate_shouldFail(){
+
+        doReturn(List.of(meetingRecord_1)).when(meetingRepository).findMeetingByEventDateForUpdate(any(LocalDate.class));
+        MeetingForm form = new MeetingForm();
+        form.setTitle("AAA");
+        form.setDetail("DETAIL");
+        form.setOpenerId(1L);
+        form.setEventDate(time_1);
+        Assertions.assertThrows(ReservationConflict.class,() -> meetingService.reserveMeeting(form));
+
 
     }
 }

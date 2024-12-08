@@ -35,6 +35,7 @@ public class UserService implements UserDetailsService {
         );
     }
     @Transactional
+    @CacheEvict(value = "getUser",key = "'users/' +#loginUserForm.email")
     public String signUp(LoginUserForm loginUserForm){
         String email=loginUserForm.getEmail();
         UserRecord user= userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException(email));

@@ -20,11 +20,12 @@ public record MeetingRecord(
         LocalDate eventDate,
         String startTime,
         String endTime,
+        String deleteFlg,
         Timestamp createdAt,
         Timestamp updatedAt
 ) {
-    public MeetingRecord(Integer id, String title, String detail, Long openerId, LocalDate eventDate,String startTime,String endTime) {
-        this(id, title, detail, openerId, eventDate,startTime,endTime,null, null);
+    public MeetingRecord(Integer id, String title, String detail, Long openerId, LocalDate eventDate,String deleteFlg,String startTime,String endTime) {
+        this(id, title, detail, openerId, eventDate,startTime,endTime,deleteFlg,null, null);
     }
 
     public MeetingRecord(MeetingForm form){
@@ -35,7 +36,8 @@ public record MeetingRecord(
                 form.getOpenerId(),
                 form.getEventDate(),
                 form.getStartTime(),
-                form.getEndTime()
+                form.getEndTime(),
+                "0"
         );
     }
 

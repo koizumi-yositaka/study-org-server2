@@ -30,13 +30,13 @@ public class MeetingRepositoryTest {
 
 //LocalDate.of(2024,11,1)
     private static MeetingRecord meetingRecord_1 =
-            new MeetingRecord(null,"TITLE_1","DETAIL_1",1L,time_1,"1700","1800");
+            new MeetingRecord(null,"TITLE_1","DETAIL_1",1L,time_1,"1700","1800","0");
     private static MeetingRecord meetingRecord_2 =
-            new MeetingRecord(null,"TITLE_2","DETAIL_2",1L,time_2,"1700","1800" );
+            new MeetingRecord(null,"TITLE_2","DETAIL_2",1L,time_2,"1700","1800","0" );
     private static MeetingRecord meetingRecord_3 =
-            new MeetingRecord(null,"TITLE_3","DETAIL_3",1L,time_3,"1700","1800");
+            new MeetingRecord(null,"TITLE_3","DETAIL_3",1L,time_3,"1700","1800","0");
     private static MeetingRecord meetingRecord_error =
-            new MeetingRecord(null,"TITLE_3","DETAIL_3",1L,LocalDate.of(2024,11,1),"1700","1800");
+            new MeetingRecord(null,"TITLE_3","DETAIL_3",1L,LocalDate.of(2024,11,1),"1700","1800","0");
 
     @Autowired
     private MeetingRepository meetingRepository;
@@ -112,7 +112,7 @@ public class MeetingRepositoryTest {
     public void put_partUpdate_shouldSuccess(){
         MeetingRecord firstElem =meetingRepository.findAllMeetings(pagination,orderProp).stream().findFirst().orElseThrow(()-> new MeetingNotFoundException(""));
         int targetId=firstElem.id();
-        MeetingRecord record = new MeetingRecord(targetId,"title_Changed",null,2L,time_3,"1700","1800",null,null);
+        MeetingRecord record = new MeetingRecord(targetId,"title_Changed",null,2L,time_3,"1700","1800","0",null,null);
         meetingRepository.update(targetId,record);
         MeetingRecord changedRecord = meetingRepository.findMeetingById(targetId).orElseThrow(()->new MeetingNotFoundException(""));
         Assertions.assertEquals(record.title(),changedRecord.title());
@@ -235,17 +235,17 @@ public class MeetingRepositoryTest {
         Assertions.assertEquals(1,meetingRepository.search(meetingSearchForm,pagination,orderProp).size());
     }
 
-    @Test
-    //重複しないようにする
-    public void insert_sameDate_shouldFail(){
-        orderProp.property("id");
-        orderProp.direction("asc");
-        var currentMeetings= meetingRepository.findAllMeetings(pagination,orderProp);
-        int currentSize =currentMeetings.size();
-        Assertions.assertThrows(RuntimeException.class,() -> meetingRepository.create(meetingRecord_error));
-
-        var afterInsertData= meetingRepository.findAllMeetings(pagination,orderProp);
-        Assertions.assertEquals(currentSize,afterInsertData.size());
-
-    }
+//    @Test
+//    //重複しないようにする
+//    public void insert_sameDate_shouldFail(){
+//        orderProp.property("id");
+//        orderProp.direction("asc");
+//        var currentMeetings= meetingRepository.findAllMeetings(pagination,orderProp);
+//        int currentSize =currentMeetings.size();
+//        Assertions.assertThrows(RuntimeException.class,() -> meetingRepository.create(meetingRecord_error));
+//
+//        var afterInsertData= meetingRepository.findAllMeetings(pagination,orderProp);
+//        Assertions.assertEquals(currentSize,afterInsertData.size());
+//
+//    }
 }

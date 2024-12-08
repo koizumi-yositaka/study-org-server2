@@ -1,6 +1,7 @@
 package com.example.study_org_server.service.meeting;
 
 import com.example.study_org_server.exception.MeetingNotFoundException;
+import com.example.study_org_server.exception.ReservationConflict;
 import com.example.study_org_server.repository.meeting.MeetingRecord;
 import com.example.study_org_server.repository.meeting.MeetingRepository;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -31,14 +31,15 @@ public class MeetingService {
         return meetingRepository.findMeetingById(id).map(MeetingRecord::repack).orElseThrow(()-> new MeetingNotFoundException("AA"));
     }
 
-    public List<MeetingResponseDTO> findMeetingByEventDate(LocalDate targetDate){
-        return meetingRepository.findMeetingByEventDate(targetDate).stream().map(MeetingRecord::repack).toList();
-    }
 
     //create
     @Transactional
     public void reserveMeeting(MeetingForm meetingForm){
-        //予約の重複チェックが必要
+        var sameDateList= meetingRepository.findMeetingByEventDateForUpdate(meetingForm.getEventDate());
+        //予約の重複チェック
+        if(!sameDateList.isEmpty()){
+            throw new ReservationConflict(meetingForm.getEventDate());
+        }
         meetingRepository.create(new MeetingRecord(meetingForm));
     }
 

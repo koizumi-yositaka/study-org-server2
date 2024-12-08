@@ -14,6 +14,7 @@ public interface MeetingRepository {
     @Select("""
             <script>
             SELECT * FROM T_MEETING
+            WHERE delete_flg != '1'
             <if test="orderProp.property!=null and !orderProp.property.isBlank()">
                 ORDER BY ${orderProp.property}
                 <choose>
@@ -35,7 +36,9 @@ public interface MeetingRepository {
                 SELECT *
                 FROM T_MEETING
                 <where>
+                    delete_flg != '1'
                     <if test='condition.searchWord != null and !condition.searchWord.isBlank()'>
+                        AND
                         (
                             LOWER(title) LIKE LOWER(CONCAT('%',#{condition.searchWord},'%'))
                             OR
@@ -84,13 +87,19 @@ public interface MeetingRepository {
                                @Param("pagination")Pagination pagination,
                                @Param("orderProp") OrderProp orderProp);
 
-
     @Select("""
             SELECT *
             FROM T_MEETING
-            where event_date = #{target}
+            where event_date = #{target} AND delete_flg != '1'
             """)
     List<MeetingRecord> findMeetingByEventDate(LocalDate target);
+    @Select("""
+            SELECT *
+            FROM T_MEETING
+            where event_date = #{target} AND delete_flg != '1'
+            FOR UPDATE
+            """)
+    List<MeetingRecord> findMeetingByEventDateForUpdate(LocalDate target);
 
     @Select("SELECT * FROM T_MEETING WHERE id=#{id}")
     Optional<MeetingRecord> findMeetingById(int id);
@@ -133,7 +142,15 @@ public interface MeetingRepository {
             """)
     void update(int id, @Param("meeting") MeetingRecord record);
 
-    @Update("DELETE FROM T_MEETING WHERE id=#{id}")
+    @Update("""
+            <script>
+                UPDATE T_MEETING
+                <set>
+                    delete_flg = '1'
+                </set>
+                WHERE id=#{id}
+            </script>
+        """)
     void deleteMeetingById(int id);
 
 

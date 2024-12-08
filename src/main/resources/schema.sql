@@ -26,9 +26,10 @@ CREATE TABLE T_MEETING (
     title VARCHAR(255) NOT NULL, -- メールアドレス
     detail VARCHAR(500) NOT NULL,     -- パスワード（ハッシュ化）
     opener_id INT NOT NULL,          -- 権限ID（外部キー）
-    event_date DATETIME NOT NULL UNIQUE, -- 開催日時
+    event_date DATETIME, -- 開催日時
     start_time CHAR(4) NOT NULL,
     end_time CHAR(4) NOT NULL,
+    delete_flg CHAR(1) DEFAULT '0' NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 作成日時
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, -- 更新日時
     FOREIGN KEY (opener_id) REFERENCES T_USER(id) -- 外部キー制約
